@@ -1,7 +1,7 @@
 - 👋 Hi, I’m @Lustick99
-- 👀 I’m interested in Web applications and Front-End coding
-- 🌱 I’m currently learning Python-Django, Razor(C#), Angular and Ionic
-- 💞️ I’m looking to collaborate on VShop
+- 👀 I’m interested in Web applications, mobile apps and big projects modules coding
+- 🌱 I’m currently senior in Python-Django, Razor(C#), Angular and Ionic
+- 💞️ I’m looking to collaborate on more projects
 - 📫 How to reach me ...
 
 <!---
