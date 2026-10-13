@@ -159,8 +159,8 @@ function enhanceV3(){
 }
 
 function attach(){let navToggle=document.getElementById('navtoggle'),panel=document.getElementById('mobilepanel');navToggle?.addEventListener('click',()=>{let v=panel.hasAttribute('open');panel.toggleAttribute('open',!v);navToggle.setAttribute('aria-expanded',String(!v));navToggle.innerHTML=icon(v?'menu':'close')});panel?.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{panel.removeAttribute('open');navToggle?.setAttribute('aria-expanded','false')}));document.getElementById('font-toggle')?.addEventListener('click',()=>{const cur=parseFloat(document.documentElement.style.getPropertyValue('--fontscale'))||1;document.documentElement.style.setProperty('--fontscale',cur>=1.2?'1':(cur+0.1).toFixed(1))});let selected='Tous';function filter(){const q=(document.getElementById('serviceSearch')?.value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();const list=services.filter(s=>(selected==='Tous'||s.cat===selected)&&(s.t+' '+s.desc+' '+s.cat).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().includes(q));let dest=document.getElementById('servicelist');if(dest)dest.innerHTML=list.length?list.map(cardService).join(''):`<div class="empty">Aucune démarche ne correspond à votre recherche. Essayez un autre mot-clé.</div>`;let cnt=document.getElementById('serviceCount');if(cnt)cnt.textContent=`${list.length} démarche${list.length>1?'s':''} trouvée${list.length>1?'s':''}`};let search=document.getElementById('serviceSearch');if(search){search.addEventListener('input',filter);document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{selected=b.dataset.cat;document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c===b));filter()}));filter()};[['contactForm','contactStatus'],['rdvForm','rdvStatus'],['suggestForm','suggestStatus']].forEach(([f,s])=>{document.getElementById(f)?.addEventListener('submit',e=>{e.preventDefault();let v=document.getElementById(s);v.textContent='Maquette de présentation : le formulaire a été vérifié localement, mais aucune demande n’a été enregistrée ou envoyée. Utilisez les coordonnées ou le formulaire du site actuel pour une demande réelle.';v.classList.add('visible');v.scrollIntoView({behavior:'smooth',block:'nearest'})})})}
-function render(){let hash=decodeURIComponent(location.hash.replace(/^#\/?/,'')).replace(/\/+$/,'');let routeKey=hash.split('/')[0]||'';const pages={'':home,commune,municipalite,demarches,actualites,projets,contact,'rendez-vous':rdv,participer};let content=v3Routes[hash]?v3Routes[hash]():hash.startsWith('actualites/article/')?v3Article(hash.split('/')[2]):routeKey==='demarches'&&hash.includes('/')?detail(hash.split('/')[1]):(pages[routeKey]?pages[routeKey]():notfound());document.getElementById('app').innerHTML=header(routeKey)+`<main id="contenu" tabindex="-1">${content||notfound()}</main>`+footer();document.title=(document.querySelector('main h1')?.textContent||'Accueil')+' | Commune du Golfe 4';attach();enhanceV3();window.scrollTo(0,0)}
-addEventListener('hashchange',render);render();
+function render(){let hash=(window.__GOLFE4_ROUTE ?? decodeURIComponent(location.hash.replace(/^#\/?/,'')).replace(/\/+$/,''));let routeKey=hash.split('/')[0]||'';const pages={'':home,commune,municipalite,demarches,actualites,projets,contact,'rendez-vous':rdv,participer};let content=v3Routes[hash]?v3Routes[hash]():hash.startsWith('actualites/article/')?v3Article(hash.split('/')[2]):routeKey==='demarches'&&hash.includes('/')?detail(hash.split('/')[1]):(pages[routeKey]?pages[routeKey]():notfound());document.getElementById('app').innerHTML=header(routeKey)+`<main id="contenu" tabindex="-1">${content||notfound()}</main>`+footer();document.title=(document.querySelector('main h1')?.textContent||'Accueil')+' | Commune du Golfe 4';attach();enhanceV3();window.scrollTo(0,0)}
+/* Routeur initialisé en fin de script, après la définition des écrans V4. */
 
 /* Golfe 4 V4 — Design des parcours secondaires et navigation enrichie.
  * Cette version est une démonstration : aucune soumission vers une API.
@@ -254,7 +254,7 @@ const v4NavAdditions={commune:[['Les quartiers','commune/quartiers']],municipali
 v3Nav.demarches.unshift(['Trouver ma démarche','demarches/guide']);
 Object.entries(v4NavAdditions).forEach(([group,els])=>{if(v3Nav[group]&&els.length)v3Nav[group].push(...els)});
 function v4Decorate(){
- let hash=decodeURIComponent(location.hash.replace(/^#\/?/,'')).replace(/\/+$/,'');
+ let hash=(window.__GOLFE4_ROUTE ?? decodeURIComponent(location.hash.replace(/^#\/?/,'')).replace(/\/+$/,''));
  document.body.classList.toggle('v4-home',!hash);
  const main=document.querySelector('main');if(!main)return;
  // Navigation transversale dans les pages secondaires et guide de démarches.
@@ -272,11 +272,54 @@ function v4Decorate(){
   const a=document.createElement('a');a.href='#/demarches/guide';a.className='v4-nav-helper';a.textContent='Trouver ma démarche';nav.appendChild(a);
  }
  const search=document.getElementById('v4DistrictSearch');if(search){const run=()=>{let needle=search.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');let shown=0;document.querySelectorAll('#v4DistrictList .v4-quarter').forEach(el=>{let s=el.dataset.name.normalize('NFD').replace(/[\u0300-\u036f]/g,'');let yes=s.includes(needle);el.hidden=!yes;if(yes)shown++});document.getElementById('v4DistrictCount').textContent=`${shown} quartier${shown>1?'s':''} correspondant${shown>1?'s':''}`};search.addEventListener('input',run)}
- const guide=document.getElementById('v4GoGuide');if(guide)guide.addEventListener('click',()=>{const selected=document.querySelector('input[name="v4Need"]:checked');let s=v4Guides.find(i=>i.slug===selected?.value)||v4Guides[0];let path=s.slug==='rdv'?'rendez-vous':s.slug==='suggestions'?'participer':'demarches/'+s.slug;let status=document.getElementById('v4GuideResponse');status.innerHTML=`Orientation trouvée : <a href="#/${path}">${s.t} ${icon('arrow')}</a>`;status.classList.add('show');location.hash='#/'+path});
+ const guide=document.getElementById('v4GoGuide');if(guide)guide.addEventListener('click',()=>{const selected=document.querySelector('input[name="v4Need"]:checked');let s=v4Guides.find(i=>i.slug===selected?.value)||v4Guides[0];let path=s.slug==='rdv'?'rendez-vous':s.slug==='suggestions'?'participer':'demarches/'+s.slug;let status=document.getElementById('v4GuideResponse');status.innerHTML=`Orientation trouvée : <a href="#/${path}">${s.t} ${icon('arrow')}</a>`;status.classList.add('show');golfe4Display(path,true)});
  document.querySelectorAll('.v3-aside nav a').forEach(a=>{let id=a.getAttribute('href')?.replace(/^#\//,'');a.classList.toggle('here',id===hash)});
  // Liens principaux accessibles au clavier et disposition harmonisée.
  document.querySelectorAll('a,button,input,select,textarea').forEach(el=>{if(!el.hasAttribute('tabindex'))el.setAttribute('tabindex','0')});
  const current=main.querySelector('h1')?.textContent?.trim()||'Accueil';document.title=`${current} · Commune du Golfe 4`;
 }
-window.addEventListener('hashchange',v4Decorate);render();v4Decorate();
+/* Navigation robuste pour navigateur normal et iframe de démonstration.
+ * L'affichage des pages ne dépend plus des modifications d'URL autorisées par le conteneur.
+ * Les routes ?page=... restent partageables individuellement sur un hébergement HTTPS standard.
+ */
+function golfe4NormalizeRoute(route){
+ return String(route||'').replace(/^#\/?/,'').replace(/^\/+|\/+$/g,'');
+}
+function golfe4ReadRoute(){
+ const fragment=location.hash.startsWith('#/')?location.hash.slice(2):'';
+ if(fragment) return golfe4NormalizeRoute(decodeURIComponent(fragment));
+ try{return golfe4NormalizeRoute(new URLSearchParams(location.search).get('page')||'')}
+ catch(_){return ''}
+}
+function golfe4Display(route,updateHistory){
+ window.__GOLFE4_ROUTE=golfe4NormalizeRoute(route);
+ if(updateHistory){
+   try{
+    const next=window.__GOLFE4_ROUTE;
+    const url=new URL(location.href);
+    url.hash='';
+    if(next)url.searchParams.set('page',next);else url.searchParams.delete('page');
+    history.pushState({golfe4Route:next},'',url.href);
+   }catch(_){/* Certains aperçus iframe interdisent history.pushState. Le routage interne reste actif. */}
+ }
+ try{render();v4Decorate()}catch(err){
+   console.error('Erreur de navigation du portail Golfe 4',err);
+   const main=document.querySelector('main');
+   if(main)main.innerHTML='<div class="wrap" style="padding:4rem 1rem"><h1>Cette rubrique est temporairement indisponible</h1><p>Veuillez revenir à l’accueil ou consulter une autre rubrique.</p><a href="#/">Retour à l’accueil</a></div>';
+ }
+}
+/* Interception en capture : le clic reste opérationnel même si un visualiseur
+ * GitHub bloque les changements de fragment dans son iframe. */
+document.addEventListener('click',function(event){
+ const link=event.target.closest('a[href^="#/"]');
+ if(!link || event.defaultPrevented || event.button!==0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)return;
+ event.preventDefault();
+ event.stopPropagation();
+ golfe4Display(link.getAttribute('href').slice(2),true);
+},true);
+window.addEventListener('popstate',()=>golfe4Display(golfe4ReadRoute(),false));
+window.addEventListener('hashchange',()=>golfe4Display(golfe4ReadRoute(),false));
+window.__golfe4Go=golfe4Display;
+golfe4Display(golfe4ReadRoute(),false);
+
 </script></body></html>
